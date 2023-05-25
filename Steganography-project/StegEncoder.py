@@ -1,6 +1,7 @@
 import numpy as np
 import cv2 as cv
 import SteganographyUtils
+import copy
 
 class StegEncoder:
 
@@ -20,8 +21,8 @@ class StegEncoder:
 
         #encodedImage = np.zeros([100,100,3],dtype=np.uint8)
         #encodedImage.fill(0) # or img[:] = 255
-
-        encodedImage = image;
+   
+        encodedImage = copy.deepcopy(image)  
 
         stegUtils = SteganographyUtils.SteganographyUtils()
         binaryMessage = stegUtils.GetBinaryMessageString(message)    

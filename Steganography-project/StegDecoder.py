@@ -1,11 +1,10 @@
 import numpy as np
 import cv2 as cv
+import matplotlib.pyplot as plt
 
 class StegDecoder:
 
-        # messageFilter: if true: filters characters that do not belong between 32 and 127 ASCII values (inclusive)
-    def Decode(self, image, messageFilter = True):    
-
+    def ImageToBinaryMessage(self, image):
         hiddenBinaryMessage = ""
         
         counter = -1
@@ -15,26 +14,13 @@ class StegDecoder:
             for i in range(np.size(image, 0)):
                 for j in range(np.size(image, 1)):
                     counter+=1
-                    if(color == 0):
-                        #print("Pixel(R)", counter, "(", image[i][j],")")
-                        num = (image[i][j])[0]%2
-                        num = num.item()
-                        hiddenBinaryMessage += str(num)
-                    if(color == 1):
-                        #print("Pixel(G)", counter-imageSize, "(", image[i][j],")")                                                
-                        num = (image[i][j])[1]%2
-                        num = num.item()
-                        hiddenBinaryMessage += str(num)
-                    if(color == 2):      
-                        #print("Pixel(B)", counter-imageSize*2, "(", image[i][j],")")                                                
-                        num = (image[i][j])[2]%2
-                        num = num.item()
-                        hiddenBinaryMessage += str(num)
+                    #print("Pixel(R)", counter, "(", image[i][j],")")
+                    num = (image[i][j])[color]%2
+                    num = num.item()
+                    hiddenBinaryMessage += str(num)
+        return hiddenBinaryMessage
 
-        #print("")                
-        #print("Decoded message (binary): ", hiddenBinaryMessage)
-        #print("")  
-
+    def BinaryMessageToString(self, hiddenBinaryMessage):
         hiddenMessage = ""
         binaryChar = ""
         counter = -1
@@ -43,25 +29,59 @@ class StegDecoder:
             if(counter == 7):
                 binaryChar = binaryChar + n 
 
-                #print(binaryChar + " " + str(int(binaryChar, 2)) + " " + chr(int(binaryChar, 2)))
-
                 if(int(binaryChar, 2)>31):
                     hiddenMessage += chr(int(binaryChar, 2))
 
                 binaryChar=""
                 counter = -1
             else:
-                binaryChar = binaryChar + n     
-        
-        if(messageFilter != 0):
-            old = hiddenMessage
-            hiddenMessage = ""
-            for c in old:
-                if(ord(c)<32 or ord(c)>127):
-                    break;
-                else:
-                    hiddenMessage = hiddenMessage + c
+                binaryChar = binaryChar + n   
+        return hiddenMessage
+
+    def RemoveAfterStopSign(self, hiddenMessage, stopSign):
+        old = hiddenMessage
+        hiddenMessage = ""
+        for c in old:
+            if(ord(c)==ord(stopSign)):
+                break;
+            else:
+                hiddenMessage = hiddenMessage + c
+        return hiddenMessage
+
+    def FilterNonRegularCharacters(self):
+        old = hiddenMessage
+        hiddenMessage = ""
+        for c in old:
+            if(ord(c)<32 or ord(c)>127):
+                break;
+            else:
+                hiddenMessage = hiddenMessage + c
+        return hiddenMessage
+
+    def ShowDecodedMessage(self, message):        
         print("\n~~~~~~~~~~~~~~~~~~~~~~~~ Steganography Decoder ~~~~~~~~~~~~~~~~~~~~~~~~")
         print("Decoded message: ")
-        print(hiddenMessage)  
+        print(message)  
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n") 
+        
+        # messageFilter: if true: filters characters that do not belong between 32 and 127 ASCII values (inclusive)
+    def Decode(self, image, messageFilter = False, showMessage = False, showImage = False, decodeUntilStopSign=False, stopSign='$'):    
+        
+        if(showImage):
+            plt.figure()
+            plt.imshow(cv.cvtColor(image, cv.COLOR_BGR2RGB))
+            #plt.show()
+            
+        hiddenBinaryMessage = self.ImageToBinaryMessage(image)
+        hiddenMessage = self.BinaryMessageToString(hiddenBinaryMessage)                       
+                
+        if(decodeUntilStopSign==True):
+            hiddenMessage = self.RemoveAfterStopSign(hiddenMessage, stopSign)
+
+        if(messageFilter == True):
+            hiddenMessage = self.FilterNonRegularCharacters(hiddenMessage)
+
+        if(showMessage):
+            self.ShowDecodedMessage(hiddenMessage)
+
+        return hiddenMessage

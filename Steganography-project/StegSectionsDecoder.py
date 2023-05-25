@@ -1,6 +1,7 @@
 import numpy as np
 import cv2 as cv
 
+# Not implemented
 class StegSectionsDecoder:
 
         # messageFilter: if true: filters characters that do not belong between 32 and 127 ASCII values (inclusive)

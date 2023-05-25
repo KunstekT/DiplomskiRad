@@ -27,8 +27,11 @@
     <Compile Include="Steganalyzer.py" />
     <Compile Include="SteganographyUtils.py" />
     <Compile Include="Steganography_project.py" />
+    <Compile Include="StegCannyPatchEncoder.py" />
     <Compile Include="StegDecoder.py" />
     <Compile Include="StegEncoder.py" />
+    <Compile Include="StegPatchDecoder.py" />
+    <Compile Include="StegPatchEncoder.py" />
     <Compile Include="StegSectionsDecoder.py" />
     <Compile Include="StegSectionsEncoder.py" />
   </ItemGroup>

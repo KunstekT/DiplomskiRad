@@ -304,19 +304,19 @@ class Steganalyzer:
 
         return histogramData, bin_edges, histogramPairValues, e, OddIndexes
     
-    def ChiSquareTest(self, observed, expected):
+    def ChiSquareTest(self, inObserved, inExpected):
 
         ## ↓ removing elements from arrays where 'expected' has zero ↓
 
         observed2 = []
         expected2 = []
 
-        for x in range(len(expected)-1):
-            observed2.append(observed[x])
-            expected2.append(expected[x])
+        for x in range(len(inExpected)-1):
+            observed2.append(inObserved[x])
+            expected2.append(inExpected[x])
 
-        for x in reversed(range(len(expected)-1)):
-            if(expected[x] == 0):
+        for x in reversed(range(len(inExpected)-1)):
+            if(inExpected[x] == 0):
                 observed2.pop(x)
                 expected2.pop(x)
 

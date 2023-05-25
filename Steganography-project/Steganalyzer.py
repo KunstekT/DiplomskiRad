@@ -5,22 +5,20 @@ import matplotlib.pyplot as plt
 
 class Steganalyzer(object):
 
-    image = np.zeros([100,100,3],dtype=np.uint8)
-    image.fill(0)
-    imageLink = ""
+    #image = np.zeros([100,100,3],dtype=np.uint8)
+    #image.fill(0)
+    #imageLink = ""
 
-    unmodifiedImage = np.zeros([100,100,3],dtype=np.uint8)
-    unmodifiedImage.fill(0)
-    unmodifiedImageLink = ""
+    #unmodifiedImage = np.zeros([100,100,3],dtype=np.uint8)
+    #unmodifiedImage.fill(0)
+    #unmodifiedImageLink = ""
 
     def LoadImage(self, link):
         self.image = cv.imread(link, cv.IMREAD_COLOR)
-        self.imageLink=link
 
         # Used to load unmodified image, one used to compare with modified
     def loadUnmodifiedImage(self, link):
         self.unmodifiedImage = cv.imread(link, cv.IMREAD_COLOR)
-        self.unmodifiedImageLink=link
 
     def getHistogram(self, image, color_channel_id):
         plt.xlim([0, 256])
@@ -33,7 +31,7 @@ class Steganalyzer(object):
         #print(histogram)
         plt.xlabel("Color value")
         plt.ylabel("Pixels")
-        plt.title("Histogram of \"" + self.imageLink + "\", color channel: " + color)
+        plt.title("Histogram, color channel: " + color)
 
     def compareHistograms(self, histogram1, histogram2, bin_edges1, bin_edges2, color1, color2):
         #plt.figure()
@@ -158,29 +156,33 @@ class Steganalyzer(object):
 
         print("Number of image rows to analyze: ", nRowsToCheck, "[", nRowsToCheck/image.shape[1]*100, "%]")
 
-        image2 = np.zeros([100,100,3],dtype=np.uint8)
+        #image2 = np.zeros([100,100,3],dtype=np.uint8)
         image2 = image[0:nRowsToCheck,:,:]
 
-        #plt.figure()
-        #plt.imshow(cv.cvtColor(image2, cv.COLOR_BGR2RGB))
-        #plt.show()
+        plt.figure()
+        plt.imshow(cv.cvtColor(image2, cv.COLOR_BGR2RGB))
+        plt.show()
 
-        histogram_R, bin_edges, histogramPairValues, e0, OddIndexes0 = self.GetImageChannelFeatures(image2, 0)
+        histogram_R, bin_edges_R, histogramPairValues_R, e_R, OddIndexes_R = self.GetImageChannelFeatures(image2, 0)
         #self.PrintHistogramValues(histogram_R, e0, OddIndexes0)
-        result0 = self.ChiSquareTest(OddIndexes0, e0)
+        result0 = self.ChiSquareTest(OddIndexes_R, e_R)
 
-        histogram_G, bin_edges, histogramPairValues, e1, OddIndexes1 = self.GetImageChannelFeatures(image2, 1)
+        self.showHistogram(histogram_R, bin_edges_R, "red")
+
+        histogram_G, bin_edges_G, histogramPairValues_G, e_G, OddIndexes_G = self.GetImageChannelFeatures(image2, 1)
         #self.PrintHistogramValues(histogram_G, e1, OddIndexes1)
-        result1 = self.ChiSquareTest(OddIndexes1, e1)
+        result1 = self.ChiSquareTest(OddIndexes_G, e_G)
 
-        histogram_B, bin_edges, histogramPairValues, e2, OddIndexes2 = self.GetImageChannelFeatures(image2, 2)
+        histogram_B, bin_edges_B, histogramPairValues_B, e_B, OddIndexes_B = self.GetImageChannelFeatures(image2, 2)
         #self.PrintHistogramValues(histogram_B, e2, OddIndexes2)
-        result2 = self.ChiSquareTest(OddIndexes2, e2)
+        result2 = self.ChiSquareTest(OddIndexes_B, e_B)
 
         print("Probability of hidden message in the red channel: {:.2f}%".format(result0*100))
         print("Probability of hidden message in the green channel: {:.2f}%".format(result1*100))
         print("Probability of hidden message in the blue channel: {:.2f}%".format(result2*100))        
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n") 
+
+        plt.show()
 
 
 
