@@ -13,44 +13,21 @@ class SteganographyUtils:
         cv.imwrite(link, self.encodedImage)
 
     def ConvertMessageToBinary(self, message):
-        stringList = list()
-        characterList=[]
+        stringList = []
+        characters = []
         for i in message:
             x=ord(i)
-            characterList.append(x)
-        for i in characterList:
-            s = str(int(bin(i)[2:]))
-            if(len(s)==7):
-                s = "0" + s
-            elif(len(s)==6):
-                s = "00" + s
-            elif(len(s)==5):
-                s = "000" + s
-            elif(len(s)==4):
-                s = "0000" + s
-            elif(len(s)==3):
-                s = "00000" + s
-            elif(len(s)==2):
-                s = "000000" + s
-            elif(len(s)==1):
-                s = "0000000" + s
-            else:
-                s = "00000000"
+            characters.append(x)
+        for i in characters:
+            s = "{:08b}".format(i)
             stringList.append(s)
-        return stringList        
+        return ''.join(stringList)         
 
     def PrintByte(self, a):
         print(format(a, '0{}b'.format(8)))       
 
     def GetByteRepresentation(self, a):
         return format(a, '0{}b'.format(8))
-
-    def GetBinaryMessageString(self, message):
-        binaryMessageStringList = self.ConvertMessageToBinary(message)
-        binaryMessageString=""
-        for s in binaryMessageStringList:
-            binaryMessageString+=s
-        return binaryMessageString
 
     def getHistogram(self, image, color_channel_id):
         plt.xlim([0, 256])
@@ -102,7 +79,6 @@ class SteganographyUtils:
 
         return histogramData, bin_edges, histogramPairValues, e, oddIndexes
     
-
     def showHistogram(self, histogram, bin_edges, color):
         #plt.figure()
         plt.plot(bin_edges[0:-1], histogram, color)
@@ -111,16 +87,30 @@ class SteganographyUtils:
         plt.ylabel("Pixels")
         plt.title("Histogram of \"" + self.imageLink + "\", color channel: " + color)
 
-    def compareHistograms(self, histogram1, histogram2, bin_edges1, bin_edges2, color1, color2):
-        #plt.figure()
-        plt.plot(bin_edges1[0:-1], histogram1, color1)
-        plt.plot(bin_edges2[0:-1], histogram2, color2)
-        #print(histogram)
-        plt.xlabel("Color value")
-        plt.ylabel("Pixels")
-        plt.title("Histogram comparision")
-        plt.legend(['lenna.png', 'beach_indexed.png'])
+    def PlotCompareHistograms(self, histogram1, histogram2, bin_edges1, bin_edges2):
+        # Plotting the first histogram
+        plt.hist(histogram1, bins=bin_edges1, label='Histogram 1')
+
+        # Plotting the second histogram
+        plt.hist(histogram2, bins=bin_edges2, label='Histogram 2')
+
+        # Adding labels and legend
+        plt.xlabel('Values')
+        plt.ylabel('Frequency')
+        plt.legend()
+
+        # Display the plot
+        plt.show()
+
+    def CompareHistograms(self, histogram1, histogram2, bin_edges1, bin_edges2, title, name1, name2):
+        plt.plot(bin_edges1[0:-1], histogram1)
+        plt.plot(bin_edges2[0:-1], histogram2)
+        plt.xlabel("Color values")
+        plt.ylabel("Frequency")
+        plt.title(title)
+        plt.legend([name1, name2])
         #plt.legend(['Unedited image', 'Edited image'])
+        plt.show()
 
     def GetSumsAndValues(self, inObserved, inExpected):        
         observed = []
@@ -154,40 +144,32 @@ class SteganographyUtils:
         return positions_list
 
     def AddStopSignsToMessage(self, message, positions, stopSign="$"):        
-        positions_list = self.GetPositionsList(positions)     
-        
+        positions_list = self.GetPositionsList(positions) 
         ogPositions = positions_list
         for i in range(len(positions_list)):
             if(positions_list[i] - 1 < 0):
                 pass            
             else:
                 positions_list[i] = positions_list[i]-1
-            #if(positions_list[i] == 0):
-            #    positions_list[i] = 1
 
         positions_list = np.cumsum(positions_list)
         for i in range(len(positions_list)):
             positions_list[i] = positions_list[i] + i
 
-        #print("Cumulative (positions in string after '$' addition): ",positions[:20])
-
         x = 0;
         for pos in positions_list:
-
             if(x == pos):
                 message = message[:pos] + stopSign + message[pos:]
                 continue
             else:
-                x = pos
-                
+                x = pos                
             message = message[:pos] + stopSign + message[pos:]
-            pos += 1  # Increase the position by 1 after inserting '$'
+            pos += 1  # Increase the position by 1 after inserting '$'  
             
-        print("------------------------------------------------------------------------------")
-        print("positions: ",ogPositions[:80],"...") 
-        print(">>>result: ",message[:50],"...")
-        print("------------------------------------------------------------------------------")
         return message
 
-
+#print("------------------------------------------------------------------------------")
+#print("positions: ",ogPositions[:80],"...") 
+#print(">>>result: ",message[:50],"...")
+#print("------------------------------------------------------------------------------")
 

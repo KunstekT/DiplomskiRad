@@ -5,14 +5,6 @@ import matplotlib.pyplot as plt
 
 class Steganalyzer(object):
 
-    #image = np.zeros([100,100,3],dtype=np.uint8)
-    #image.fill(0)
-    #imageLink = ""
-
-    #unmodifiedImage = np.zeros([100,100,3],dtype=np.uint8)
-    #unmodifiedImage.fill(0)
-    #unmodifiedImageLink = ""
-
     def LoadImage(self, link):
         self.image = cv.imread(link, cv.IMREAD_COLOR)
 
@@ -20,6 +12,7 @@ class Steganalyzer(object):
     def loadUnmodifiedImage(self, link):
         self.unmodifiedImage = cv.imread(link, cv.IMREAD_COLOR)
 
+    # Unused
     def getHistogram(self, image, color_channel_id):
         plt.xlim([0, 256])
         histogram, bin_edges = np.histogram(image[:, :, color_channel_id], bins=256, range=(0, 256))
@@ -44,7 +37,6 @@ class Steganalyzer(object):
         plt.legend(['lenna.png', 'beach_indexed.png'])
         #plt.legend(['Unedited image', 'Edited image'])
 
-  
         # ? Prints out comparison of values needed for chi test
     def printComparisionTable(self, OddIndexAverages, e, OddIndexAverages2, e2):
         blankimage = np.zeros([100,100,3],dtype=np.uint8)
@@ -59,19 +51,15 @@ class Steganalyzer(object):
             for i in range(len(e)):
                 print("["+ str(i) +"]: Odd: "+ str(OddIndexAverages[i]) +", e: "+  str(e[i]))
     
+    # Unused
     def getHistogramPairValues(self, histogram):
-        pairvalue=list()
-        histogramPairValues = list()
-        i=1
-        for i in range(256):
-            pairvalue.clear()
-            if(i%2==1):
-                pairvalue.append(histogram[i-1])
-                pairvalue.append(histogram[i])
-                vectorpairvalue = np.array(pairvalue)
-                histogramPairValues.append(vectorpairvalue)
-        return histogramPairValues
+        histogram_pair_values = []
+        for i in range(1, 256, 2):
+            pair_value = [histogram[i-1], histogram[i]]
+            histogram_pair_values.append(np.array(pair_value))
+        return histogram_pair_values
 
+    # Unused
     def getPairValuesAverages(self, values):
         PairValuesAverages = list()
         i = 0
@@ -82,60 +70,32 @@ class Steganalyzer(object):
                 PairValuesAverages.append(avg)
         return PairValuesAverages
 
-    def getOddIndexElements(self, elements):
-        oddIndexElements = []
-        i=0
-        for i in range(len(elements)):
-            if(i%2==1):
-                oddIndexElements.append(elements[i])
-        return oddIndexElements
-
-    def GetImageChannelFeatures(self, values, color):
-        c=0
-        if(color == 0 or color == 1 or color == 2):
-            c=color
-        else:
-            print("GetImageChannelFeatures warning: wrong color channel input, channel 0 taken")
-
-        #print("\n\nGetImageChannelFeatures...color: ", color, ", ", c)  
-        histogramData, bin_edges = self.getHistogram(values, c)
-        histogramPairValues = self.getHistogramPairValues(histogramData)
-        e = self.getPairValuesAverages(histogramData)
-        OddIndexes = self.getOddIndexElements(histogramData)
-
-        return histogramData, bin_edges, histogramPairValues, e, OddIndexes
+    def GetImageChannelFeatures(self, image, colorId):
+        if(colorId < 0 or colorId > 2):
+            colorId = 0
+        histogramData, bin_edges = np.histogram(image[:, :, colorId], bins=256, range=(0, 256))
+        averagedPairs = [(histogramData[i] + histogramData[i+1]) / 2 for i in range(0, len(histogramData)-1, 2)]
+        oddIndexElements = histogramData[1::2]
+        return averagedPairs, oddIndexElements
     
+    def GetSumsAndValues(self, inObserved, inExpected):        
+        observed = []
+        expected = []
+        for x in range(len(inExpected)-1):
+            observed.append(inObserved[x])
+            expected.append(inExpected[x])
+        for x in reversed(range(len(inExpected)-1)):
+            if(inExpected[x] == 0):
+                observed.pop(x)
+                expected.pop(x)
+        exp_sum = sum(expected)
+        obs_sum = sum(observed)
+        return obs_sum, exp_sum, observed, expected     
+
     def ChiSquareTest(self, observed, expected):
-
-        ## ↓ removing elements from arrays where 'expected' has zero ↓
-
-        observed2 = []
-        expected2 = []
-
-        for x in range(len(expected)-1):
-            observed2.append(observed[x])
-            expected2.append(expected[x])
-
-        for x in reversed(range(len(expected)-1)):
-            if(expected[x] == 0):
-                observed2.pop(x)
-                expected2.pop(x)
-
-        #print("Observed2 sum: ", np.sum(observed2))
-        #print("Expected2 sum: ", np.sum(expected2))
-
-        ## ↑ removing elements from arrays where 'expected' has zero ↑
-        ## ↓ equalizing sums of expected and observed ↓
-
-        exp_sum = sum(expected2)
-        obs_sum = sum(observed2)
-
-        exp2 = (expected2/exp_sum)*obs_sum
-        #print("!! ", sum(exp2), "!!", sum(observed2))
-
-        ## ↑ equalizing sums of expected and observed ↑
-
-        chi, p = sp.stats.chisquare(observed2, exp2, 0)            
+        obs_sum, exp_sum, obsValues, expValues = self.GetSumsAndValues(observed, expected)
+        x = (expValues/exp_sum)*obs_sum
+        chi, p = sp.stats.chisquare(obsValues, x, 0)           
         return p
 
     def PrintHistogramValues(self, histogram, e, OddIndexes):
@@ -148,42 +108,22 @@ class Steganalyzer(object):
         print(OddIndexes[:])
         print("--------------------------")
  
-    def Analyze(self, image, nRowsToCheck):
-        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Steganalyzer ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+# ...  # self.PrintHistogramValues(histogram_R, e0, OddIndexes_R)
 
+    def Analyze(self, image, nRowsToCheck):
         if(nRowsToCheck>image.shape[1]):
             nRowsToCheck = image.shape[1]
+        print(" Analyzing", nRowsToCheck, "rows (", nRowsToCheck/image.shape[1]*100, "%)")
+        imagePartToCheck = image[0:nRowsToCheck,:,:]
 
-        print("Number of image rows to analyze: ", nRowsToCheck, "[", nRowsToCheck/image.shape[1]*100, "%]")
+        e_R, oddIndexElements_R = self.GetImageChannelFeatures(imagePartToCheck, 0)        
+        resultR = self.ChiSquareTest(oddIndexElements_R, e_R)
+        e_G, oddIndexElements_G = self.GetImageChannelFeatures(imagePartToCheck, 1)
+        resultG = self.ChiSquareTest(oddIndexElements_G, e_G)
+        e_B, oddIndexElements_B = self.GetImageChannelFeatures(imagePartToCheck, 2)
+        resultB = self.ChiSquareTest(oddIndexElements_B, e_B)
 
-        #image2 = np.zeros([100,100,3],dtype=np.uint8)
-        image2 = image[0:nRowsToCheck,:,:]
-
-        plt.figure()
-        plt.imshow(cv.cvtColor(image2, cv.COLOR_BGR2RGB))
-        plt.show()
-
-        histogram_R, bin_edges_R, histogramPairValues_R, e_R, OddIndexes_R = self.GetImageChannelFeatures(image2, 0)
-        #self.PrintHistogramValues(histogram_R, e0, OddIndexes0)
-        result0 = self.ChiSquareTest(OddIndexes_R, e_R)
-
-        self.showHistogram(histogram_R, bin_edges_R, "red")
-
-        histogram_G, bin_edges_G, histogramPairValues_G, e_G, OddIndexes_G = self.GetImageChannelFeatures(image2, 1)
-        #self.PrintHistogramValues(histogram_G, e1, OddIndexes1)
-        result1 = self.ChiSquareTest(OddIndexes_G, e_G)
-
-        histogram_B, bin_edges_B, histogramPairValues_B, e_B, OddIndexes_B = self.GetImageChannelFeatures(image2, 2)
-        #self.PrintHistogramValues(histogram_B, e2, OddIndexes2)
-        result2 = self.ChiSquareTest(OddIndexes_B, e_B)
-
-        print("Probability of hidden message in the red channel: {:.2f}%".format(result0*100))
-        print("Probability of hidden message in the green channel: {:.2f}%".format(result1*100))
-        print("Probability of hidden message in the blue channel: {:.2f}%".format(result2*100))        
-        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n") 
-
-        plt.show()
-
+        return resultR, resultG, resultB
 
 
 

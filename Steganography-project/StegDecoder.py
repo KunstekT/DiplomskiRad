@@ -5,8 +5,7 @@ import matplotlib.pyplot as plt
 class StegDecoder:
 
     def ImageToBinaryMessage(self, image):
-        hiddenBinaryMessage = ""
-        
+        hiddenBinaryMessage = ""        
         counter = -1
         xy = np.shape(image)
         imageSize=xy[0]*xy[1]
@@ -14,13 +13,12 @@ class StegDecoder:
             for i in range(np.size(image, 0)):
                 for j in range(np.size(image, 1)):
                     counter+=1
-                    #print("Pixel(R)", counter, "(", image[i][j],")")
                     num = (image[i][j])[color]%2
                     num = num.item()
                     hiddenBinaryMessage += str(num)
         return hiddenBinaryMessage
 
-    def BinaryMessageToString(self, hiddenBinaryMessage):
+    def ConvertBinaryToMessage(self, hiddenBinaryMessage):
         hiddenMessage = ""
         binaryChar = ""
         counter = -1
@@ -28,10 +26,8 @@ class StegDecoder:
             counter += 1
             if(counter == 7):
                 binaryChar = binaryChar + n 
-
                 if(int(binaryChar, 2)>31):
                     hiddenMessage += chr(int(binaryChar, 2))
-
                 binaryChar=""
                 counter = -1
             else:
@@ -48,7 +44,7 @@ class StegDecoder:
                 hiddenMessage = hiddenMessage + c
         return hiddenMessage
 
-    def FilterNonRegularCharacters(self):
+    def FilterNonRegularCharacters(self, hiddenMessage):
         old = hiddenMessage
         hiddenMessage = ""
         for c in old:
@@ -65,23 +61,19 @@ class StegDecoder:
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n") 
         
         # messageFilter: if true: filters characters that do not belong between 32 and 127 ASCII values (inclusive)
-    def Decode(self, image, messageFilter = False, showMessage = False, showImage = False, decodeUntilStopSign=False, stopSign='$'):    
-        
-        if(showImage):
-            plt.figure()
-            plt.imshow(cv.cvtColor(image, cv.COLOR_BGR2RGB))
-            #plt.show()
+        # showMessage: if true: prints out decoded message inside the console
+        # decodeUntilStopSign: if true: stops decoding after the stop sign gets decoded
+        # stopSign: default value is '$'
+
+    def Decode(self, image, messageFilter = False, decodeUntilStopSign=False, stopSign='$'):
             
         hiddenBinaryMessage = self.ImageToBinaryMessage(image)
-        hiddenMessage = self.BinaryMessageToString(hiddenBinaryMessage)                       
+        hiddenMessage = self.ConvertBinaryToMessage(hiddenBinaryMessage)                       
                 
         if(decodeUntilStopSign==True):
             hiddenMessage = self.RemoveAfterStopSign(hiddenMessage, stopSign)
 
         if(messageFilter == True):
             hiddenMessage = self.FilterNonRegularCharacters(hiddenMessage)
-
-        if(showMessage):
-            self.ShowDecodedMessage(hiddenMessage)
 
         return hiddenMessage

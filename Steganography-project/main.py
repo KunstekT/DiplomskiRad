@@ -1,3 +1,4 @@
+from uu import encode
 import numpy as np
 import cv2 as cv
 import matplotlib.pyplot as plt
@@ -29,35 +30,50 @@ messageToEncode = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras
 for i in range(5):
     messageToEncode = messageToEncode + messageToEncode
     
-image = cv.imread("images/beach.png", cv.IMREAD_COLOR)
+image = cv.imread("images/lenna.png", cv.IMREAD_COLOR)
+encoded_image = encoder.GetEncodedImage(image, messageToEncode)
+msg = decoder.Decode(encoded_image, messageFilter=True)
+print("Decoded message: "+msg)
 
-#thresholded = stegUtils.GetCannyEdgesImage(image, 50, 150)
+print("------------------------------------------------------------------------------")
+print("------------------------------------------------------------------------------")
 
-#output_image = encoderPatch.GetEncodedImage(messageToEncode, image, 8, showPatches = False, addStopSigns= True)
-#output_image = encoderCannyPatch.GetEncodedImage(messageToEncode, image, 8, showPatches = False)
+step = 8
+encoded_patches_image = encoderPatch.GetEncodedImage(messageToEncode, image, step, addStopSigns= True)
+pmsg = decoderPatch.Decode(encoded_patches_image, step, decodeUntilStopSign=True)
+print("Decoded message (patches): "+pmsg)
 
-#output_message = decoderPatch.Decode(output_image, 8, decodeUntilStopSign= True)
-#print(output_message)
+cv.imshow('Original Image', image)
+cv.imshow('Encoded Image', encoded_image)
+cv.imshow('Encoded Image (in patches)', encoded_patches_image)
+cv.waitKey(0) 
 
-img = encoderPatch.GetEncodedImage(messageToEncode, image, 8, showPatches = False, addStopSigns= True)
+cv.imwrite('images/output/encoded_image.jpg', encoded_image)
+cv.imwrite('images/output/encoded_patches_image.jpg', encoded_patches_image)
 
-#og = decoderPatch.Decode(image, 8)
-#print("orig: ",og[:50])
+print("------------------------------------------------------------------------------")
+print("------------------------------------------------------------------------------")
+print("")
+print(" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Steganalyzer ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+print("  -- Sequential LSB encoding")
 
-dmsg = decoderPatch.Decode(img, 8, decodeUntilStopSign=True)
-print(dmsg)
+resultR, resultG, resultB = steganalyzer.Analyze(encoded_image, 1000)
+print(" Probability of hidden message in the red channel: {:.2f}%".format(resultR*100))
+print(" Probability of hidden message in the green channel: {:.2f}%".format(resultG*100))
+print(" Probability of hidden message in the blue channel: {:.2f}%".format(resultB*100))        
+print(" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n") 
 
-#cv.imshow('Original Image', image)
-#plt.figure()
-#plt.imshow(cv.cvtColor(output_image, cv.COLOR_BGR2RGB))
-#plt.show()
+print("  -- Patch encoding ("+str(step)+"x"+str(step)+")")
+resultR, resultG, resultB = steganalyzer.Analyze(encoded_patches_image, 1000)
+print(" Probability of hidden message in the red channel: {:.2f}%".format(resultR*100))
+print(" Probability of hidden message in the green channel: {:.2f}%".format(resultG*100))
+print(" Probability of hidden message in the blue channel: {:.2f}%".format(resultB*100))        
+print(" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n") 
 
-#encodedImage = encoder.GetEncodedImage(image, messageToEncode)
-#decoder.Decode(encodedImage, True)
+histogram_R, bin_edges_R = steganalyzer.getHistogram(encoded_image, 0)
+e_R, OddIndexes_R = steganalyzer.GetImageChannelFeatures(encoded_image, 0)
 
-#image2 = cv.imread("images/beach.png", cv.IMREAD_COLOR)
-#encodedImageSect = encoderSect.GetEncodedImage(image2, messageToEncode, numberOfSections=8192*8)
-#decoderSect.Decode(encodedImageSect, True)
+P_histogram_R, P_bin_edges_R = steganalyzer.getHistogram(encoded_patches_image, 0)
+P_e_R, P_OddIndexes_R = steganalyzer.GetImageChannelFeatures(encoded_patches_image, 0)
 
-#steganalyzer.Analyze(encodedImage, 1000)
-#steganalyzer.Analyze(encodedImageSect, 1000)
+stegUtils.CompareHistograms(histogram_R, P_histogram_R, bin_edges_R, P_bin_edges_R, "Histogram comparision", "Sequential LSB method","Patch LSB method")

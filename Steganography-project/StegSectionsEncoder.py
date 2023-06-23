@@ -25,7 +25,7 @@ class StegSectionsEncoder:
         encodedImage = image;
 
         stegUtils = SteganographyUtils.SteganographyUtils()
-        binaryMessage = stegUtils.GetBinaryMessageString(message)    
+        binaryMessage = stegUtils.ConvertMessageToBinary(message)    
 
         print("Size: "+ str((encodedImage.size/3)/numberOfSections))  
         xLength = np.size(encodedImage, 1)
