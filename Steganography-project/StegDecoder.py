@@ -7,8 +7,6 @@ class StegDecoder:
     def ImageToBinaryMessage(self, image):
         hiddenBinaryMessage = ""        
         counter = -1
-        xy = np.shape(image)
-        imageSize=xy[0]*xy[1]
         for color in range(3):
             for i in range(np.size(image, 0)):
                 for j in range(np.size(image, 1)):
@@ -16,6 +14,17 @@ class StegDecoder:
                     num = (image[i][j])[color]%2
                     num = num.item()
                     hiddenBinaryMessage += str(num)
+        return hiddenBinaryMessage
+
+    def ImageToBinaryMessageFromChannel(self, image, channel):
+        hiddenBinaryMessage = ""        
+        counter = -1
+        for i in range(np.size(image, 0)):
+            for j in range(np.size(image, 1)):
+                counter+=1
+                num = (image[i][j])[channel]%2
+                num = num.item()
+                hiddenBinaryMessage += str(num)
         return hiddenBinaryMessage
 
     def ConvertBinaryToMessage(self, hiddenBinaryMessage):
@@ -60,16 +69,27 @@ class StegDecoder:
         print(message)  
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n") 
         
-        # messageFilter: if true: filters characters that do not belong between 32 and 127 ASCII values (inclusive)
-        # showMessage: if true: prints out decoded message inside the console
-        # decodeUntilStopSign: if true: stops decoding after the stop sign gets decoded
-        # stopSign: default value is '$'
-
+    # messageFilter: if true: filters characters that do not belong between 32 and 127 ASCII values (inclusive)
+    # decodeUntilStopSign: if true: stops decoding after the stop sign gets decoded
+    # stopSign: default value is '$'
     def Decode(self, image, messageFilter = False, decodeUntilStopSign=False, stopSign='$'):
             
         hiddenBinaryMessage = self.ImageToBinaryMessage(image)
         hiddenMessage = self.ConvertBinaryToMessage(hiddenBinaryMessage)                       
                 
+        if(decodeUntilStopSign==True):
+            hiddenMessage = self.RemoveAfterStopSign(hiddenMessage, stopSign)
+
+        if(messageFilter == True):
+            hiddenMessage = self.FilterNonRegularCharacters(hiddenMessage)
+
+        return hiddenMessage
+
+    def DecodeSingleChannel(self, image, channel, messageFilter = False, decodeUntilStopSign=False, stopSign='$'):        
+
+        hiddenBinaryMessage = self.ImageToBinaryMessageFromChannel(image, channel)
+        hiddenMessage = self.ConvertBinaryToMessage(hiddenBinaryMessage) 
+
         if(decodeUntilStopSign==True):
             hiddenMessage = self.RemoveAfterStopSign(hiddenMessage, stopSign)
 

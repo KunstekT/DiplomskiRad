@@ -80,26 +80,17 @@ class SteganographyUtils:
         return histogramData, bin_edges, histogramPairValues, e, oddIndexes
     
     def showHistogram(self, histogram, bin_edges, color):
-        #plt.figure()
         plt.plot(bin_edges[0:-1], histogram, color)
-        #print(histogram)
         plt.xlabel("Color value")
         plt.ylabel("Pixels")
         plt.title("Histogram of \"" + self.imageLink + "\", color channel: " + color)
 
     def PlotCompareHistograms(self, histogram1, histogram2, bin_edges1, bin_edges2):
-        # Plotting the first histogram
         plt.hist(histogram1, bins=bin_edges1, label='Histogram 1')
-
-        # Plotting the second histogram
         plt.hist(histogram2, bins=bin_edges2, label='Histogram 2')
-
-        # Adding labels and legend
         plt.xlabel('Values')
         plt.ylabel('Frequency')
-        plt.legend()
-
-        # Display the plot
+        plt.legend()        
         plt.show()
 
     def CompareHistograms(self, histogram1, histogram2, bin_edges1, bin_edges2, title, name1, name2):
@@ -109,7 +100,16 @@ class SteganographyUtils:
         plt.ylabel("Frequency")
         plt.title(title)
         plt.legend([name1, name2])
-        #plt.legend(['Unedited image', 'Edited image'])
+        plt.show()    
+        
+    def CompareThreeHistograms(self, histogram1, histogram2, histogram3, bin_edges1, bin_edges2, bin_edges3, title, name1, name2, name3):
+        plt.plot(bin_edges1[0:-1], histogram1)
+        plt.plot(bin_edges2[0:-1], histogram2)
+        plt.plot(bin_edges3[0:-1], histogram3)
+        plt.xlabel("Color values")
+        plt.ylabel("Frequency")
+        plt.title(title)
+        plt.legend([name1, name2, name3])
         plt.show()
 
     def GetSumsAndValues(self, inObserved, inExpected):        
@@ -135,41 +135,18 @@ class SteganographyUtils:
         exp2 = (expValues/exp_sum)*obs_sum
         chi, p = sp.stats.chisquare(obsValues, exp2, 0)           
         return p
-    
-    def GetPositionsList(self, values):
-        positions_list=[]
-        for i in range(len(values)):
-            x = int(int(values[i])/8)
-            positions_list.append(x)
-        return positions_list
 
-    def AddStopSignsToMessage(self, message, positions, stopSign="$"):        
-        positions_list = self.GetPositionsList(positions) 
-        ogPositions = positions_list
-        for i in range(len(positions_list)):
-            if(positions_list[i] - 1 < 0):
-                pass            
-            else:
-                positions_list[i] = positions_list[i]-1
-
-        positions_list = np.cumsum(positions_list)
-        for i in range(len(positions_list)):
-            positions_list[i] = positions_list[i] + i
-
-        x = 0;
-        for pos in positions_list:
-            if(x == pos):
-                message = message[:pos] + stopSign + message[pos:]
-                continue
-            else:
-                x = pos                
-            message = message[:pos] + stopSign + message[pos:]
-            pos += 1  # Increase the position by 1 after inserting '$'  
-            
+    def AddStopSignsToMessage(self, message, dataAmounts, stopSign="$"):       
+        data = []
+        for i in range(len(dataAmounts)):
+            x = int(int(dataAmounts[i])/8)
+            data.append(x)
+        for i in range(len(data)):
+            if(data[i] - 1 >= 0):
+                data[i] = data[i]-1
+        data = np.cumsum(data)
+        for i in range(len(data)):
+            data[i] = data[i] + i
+        for position in data:
+            message = message[:position] + stopSign + message[position:]               
         return message
-
-#print("------------------------------------------------------------------------------")
-#print("positions: ",ogPositions[:80],"...") 
-#print(">>>result: ",message[:50],"...")
-#print("------------------------------------------------------------------------------")
-

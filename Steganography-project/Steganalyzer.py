@@ -8,36 +8,28 @@ class Steganalyzer(object):
     def LoadImage(self, link):
         self.image = cv.imread(link, cv.IMREAD_COLOR)
 
-        # Used to load unmodified image, one used to compare with modified
     def loadUnmodifiedImage(self, link):
         self.unmodifiedImage = cv.imread(link, cv.IMREAD_COLOR)
 
-    # Unused
     def getHistogram(self, image, color_channel_id):
         plt.xlim([0, 256])
         histogram, bin_edges = np.histogram(image[:, :, color_channel_id], bins=256, range=(0, 256))
         return histogram, bin_edges
 
     def showHistogram(self, histogram, bin_edges, color):
-        #plt.figure()
         plt.plot(bin_edges[0:-1], histogram, color)
-        #print(histogram)
         plt.xlabel("Color value")
         plt.ylabel("Pixels")
         plt.title("Histogram, color channel: " + color)
 
     def compareHistograms(self, histogram1, histogram2, bin_edges1, bin_edges2, color1, color2):
-        #plt.figure()
         plt.plot(bin_edges1[0:-1], histogram1, color1)
         plt.plot(bin_edges2[0:-1], histogram2, color2)
-        #print(histogram)
         plt.xlabel("Color value")
         plt.ylabel("Pixels")
         plt.title("Histogram comparision")
         plt.legend(['lenna.png', 'beach_indexed.png'])
-        #plt.legend(['Unedited image', 'Edited image'])
 
-        # ? Prints out comparison of values needed for chi test
     def printComparisionTable(self, OddIndexAverages, e, OddIndexAverages2, e2):
         blankimage = np.zeros([100,100,3],dtype=np.uint8)
         blankimage.fill(0) # or img[:] = 255
@@ -51,7 +43,6 @@ class Steganalyzer(object):
             for i in range(len(e)):
                 print("["+ str(i) +"]: Odd: "+ str(OddIndexAverages[i]) +", e: "+  str(e[i]))
     
-    # Unused
     def getHistogramPairValues(self, histogram):
         histogram_pair_values = []
         for i in range(1, 256, 2):
@@ -59,7 +50,6 @@ class Steganalyzer(object):
             histogram_pair_values.append(np.array(pair_value))
         return histogram_pair_values
 
-    # Unused
     def getPairValuesAverages(self, values):
         PairValuesAverages = list()
         i = 0
@@ -107,8 +97,6 @@ class Steganalyzer(object):
         print("\n- OddIndexes -----------")
         print(OddIndexes[:])
         print("--------------------------")
- 
-# ...  # self.PrintHistogramValues(histogram_R, e0, OddIndexes_R)
 
     def Analyze(self, image, nRowsToCheck):
         if(nRowsToCheck>image.shape[1]):
