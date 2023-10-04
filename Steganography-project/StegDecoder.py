@@ -71,9 +71,8 @@ class StegDecoder:
         
     # messageFilter: if true: filters characters that do not belong between 32 and 127 ASCII values (inclusive)
     # decodeUntilStopSign: if true: stops decoding after the stop sign gets decoded
-    # stopSign: default value is '$'
-    def Decode(self, image, messageFilter = False, decodeUntilStopSign=False, stopSign='$'):
-            
+    # stopSign: '$' by default
+    def Decode(self, image, messageFilter = False, decodeUntilStopSign=False, stopSign='$'):            
         hiddenBinaryMessage = self.ImageToBinaryMessage(image)
         hiddenMessage = self.ConvertBinaryToMessage(hiddenBinaryMessage)                       
                 
@@ -85,8 +84,7 @@ class StegDecoder:
 
         return hiddenMessage
 
-    def DecodeSingleChannel(self, image, channel, messageFilter = False, decodeUntilStopSign=False, stopSign='$'):        
-
+    def DecodeSingleChannel(self, image, channel, messageFilter = False, decodeUntilStopSign=False, stopSign='$'):
         hiddenBinaryMessage = self.ImageToBinaryMessageFromChannel(image, channel)
         hiddenMessage = self.ConvertBinaryToMessage(hiddenBinaryMessage) 
 

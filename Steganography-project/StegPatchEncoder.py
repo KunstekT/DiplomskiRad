@@ -1,5 +1,3 @@
-from turtle import color
-from uu import encode
 import patchify as pf
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,18 +9,6 @@ import StegDecoder
 
 class StegPatchEncoder:
 
-    def PrintEncodingStart(self, message, colorIndex):
-        colorName = "black"
-        if(colorIndex == 0):
-            colorName = "red"
-        if(colorIndex == 1):
-            colorName = "green"
-        if(colorIndex == 2):
-            colorName = "blue"
-        print("\n~~~~~~~~~~~~~~~~~~~~ Steganography Patches Encoder ~~~~~~~~~~~~~~~~~~~~")
-        print("Message \""+ message +"\" encoded (last encoded pixel color: "+colorName +")")
-        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")        
-    
     def PrintMessage(self, message):        
         print(" ------------------------------------ ")
         print(" >>> "+message+" <<< ")
@@ -97,27 +83,14 @@ class StegPatchEncoder:
                 dataAmounts.append(self.GetDataAmount(std, step))
         return dataAmounts
 
-    def GetDataAmounts(self, patches, step):
-        dataAmountsR, dataAmountsG, dataAmountsB = [], [], []
-        for i in range(patches.shape[0]):
-            for j in range(patches.shape[1]):                              
-                patch = patches[i, j, 0]
-                stdR = np.std(patch[:,:,2])
-                stdG = np.std(patch[:,:,1])
-                stdB = np.std(patch[:,:,0])
-                dataAmountsR.append(self.GetDataAmount(stdR, step))
-                dataAmountsG.append(self.GetDataAmount(stdG, step))
-                dataAmountsB.append(self.GetDataAmount(stdB, step))
-        return [dataAmountsB, dataAmountsG, dataAmountsR] 
-
     def GetEncodedImage(self, message, image, step, channel=0, addStopSigns = True, stopSign = '$'):        
         utils = SteganographyUtils.SteganographyUtils()
         image_height, image_width, channel_count = image.shape        
         patch_height, patch_width = step, step
         patch_shape = (patch_height, patch_width, channel_count)
-        patches = pf.patchify(copy.deepcopy(image), patch_shape, step=step)                                             #dataAmountsTotal = self.GetDataAmounts(patches, step) 
-        dataAmounts = self.GetChannelDataAmounts(patches, step, channel)                                                 #dataAmounts = dataAmountsTotal[channel]        
-        if(addStopSigns == True):                                                                                       #message = utils.AddStopSignsToMessage(message, dataAmountsTotal[channel], stopSign=stopSign) 
+        patches = pf.patchify(copy.deepcopy(image), patch_shape, step=step) 
+        dataAmounts = self.GetChannelDataAmounts(patches, step, channel)
+        if(addStopSigns == True): 
             message = utils.AddStopSignsToMessage(message, dataAmounts, stopSign=stopSign) 
         binaryMessage = utils.ConvertMessageToBinary(message)
 

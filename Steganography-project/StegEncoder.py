@@ -17,7 +17,7 @@ class StegEncoder:
         print("Message \""+ message +"\" encoded (last encoded pixel color: "+colorName +")")
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n") 
 
-    def GetEncodedImage(self, image, message, printEncodedMessage = True):   
+    def GetEncodedImage(self, image, message, printEncodedMessage = False):   
         encodedImage = copy.deepcopy(image)  
         stegUtils = SteganographyUtils.SteganographyUtils()
         binaryMessage = stegUtils.ConvertMessageToBinary(message)   
@@ -28,7 +28,7 @@ class StegEncoder:
                     counter+=1
                     if(counter >= len(binaryMessage)):
                         if(counter == len(binaryMessage) and printEncodedMessage == True):
-                            self.PrintEncodedMessage(message, colorIndex)
+                            #self.PrintEncodedMessage(message, colorIndex)
                             print("Message encoded successfully. Number of saved characters: ", int(counter/8))
                     else:
                         if(binaryMessage[counter]=='1'):

@@ -5,60 +5,10 @@ import matplotlib.pyplot as plt
 
 class Steganalyzer(object):
 
-    def LoadImage(self, link):
-        self.image = cv.imread(link, cv.IMREAD_COLOR)
-
-    def loadUnmodifiedImage(self, link):
-        self.unmodifiedImage = cv.imread(link, cv.IMREAD_COLOR)
-
     def getHistogram(self, image, color_channel_id):
         plt.xlim([0, 256])
         histogram, bin_edges = np.histogram(image[:, :, color_channel_id], bins=256, range=(0, 256))
         return histogram, bin_edges
-
-    def showHistogram(self, histogram, bin_edges, color):
-        plt.plot(bin_edges[0:-1], histogram, color)
-        plt.xlabel("Color value")
-        plt.ylabel("Pixels")
-        plt.title("Histogram, color channel: " + color)
-
-    def compareHistograms(self, histogram1, histogram2, bin_edges1, bin_edges2, color1, color2):
-        plt.plot(bin_edges1[0:-1], histogram1, color1)
-        plt.plot(bin_edges2[0:-1], histogram2, color2)
-        plt.xlabel("Color value")
-        plt.ylabel("Pixels")
-        plt.title("Histogram comparision")
-        plt.legend(['lenna.png', 'beach_indexed.png'])
-
-    def printComparisionTable(self, OddIndexAverages, e, OddIndexAverages2, e2):
-        blankimage = np.zeros([100,100,3],dtype=np.uint8)
-        blankimage.fill(0) # or img[:] = 255
-        if(self.unmodifiedImageLink != ""):
-            print("________________________________________")
-            print("original image is loaded for comparision")
-            print("____|edited image   |   original image")
-            for i in range(len(e)):
-                print("["+ str(i) +"]: Odd: "+ str(OddIndexAverages[i]) +", e: "+  str(e[i]) + "   |   Odd: "+ str(OddIndexAverages2[i]) +", e: "+  str(e2[i]) + " ")
-        else:
-            for i in range(len(e)):
-                print("["+ str(i) +"]: Odd: "+ str(OddIndexAverages[i]) +", e: "+  str(e[i]))
-    
-    def getHistogramPairValues(self, histogram):
-        histogram_pair_values = []
-        for i in range(1, 256, 2):
-            pair_value = [histogram[i-1], histogram[i]]
-            histogram_pair_values.append(np.array(pair_value))
-        return histogram_pair_values
-
-    def getPairValuesAverages(self, values):
-        PairValuesAverages = list()
-        i = 0
-        avg = 0
-        for i in range(len(values)-1):
-            if(i%2==0):
-                avg=(values[i]+values[i+1])/2
-                PairValuesAverages.append(avg)
-        return PairValuesAverages
 
     def GetImageChannelFeatures(self, image, colorId):
         if(colorId < 0 or colorId > 2):
@@ -87,16 +37,6 @@ class Steganalyzer(object):
         x = (expValues/exp_sum)*obs_sum
         chi, p = sp.stats.chisquare(obsValues, x, 0)           
         return p
-
-    def PrintHistogramValues(self, histogram, e, OddIndexes):
-        print("\n--------------------------")
-        print("\n- histogram -----------")
-        print(histogram[:])
-        print("\n- e -----------")
-        print(e[:])
-        print("\n- OddIndexes -----------")
-        print(OddIndexes[:])
-        print("--------------------------")
 
     def Analyze(self, image, nRowsToCheck):
         if(nRowsToCheck>image.shape[1]):
